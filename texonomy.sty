@@ -1,0 +1,167 @@
+%% texonomy.sty
+%% Copyright 2019 Yuchang Yang < yang.yc.allium@gmail.com >
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3c
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+% 
+% The Current Maintainer of this work is Yuchang Yang.
+%
+% This work consists of:
+%   - texonomy.sty
+%   - texonomy.tex
+%   - texonomy.pdf
+%   - README.md
+%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{texonomy}[2019/12/25 v1.00]
+\newif\if@tx@chinese@
+  \@tx@chinese@false
+\DeclareOption{nonlatin}{\@tx@chinese@true}
+\ProcessOptions
+% Spacing
+\frenchspacing
+\makeatletter
+% Constants
+\def\tx@true{t}
+\def\tx@false{f}
+\def\tx@nobreak{\penalty5000\relax}
+% Variables
+\def\tx@current@genus{}
+\def\tx@hook#1{}
+% Status Resetting
+\newtoks\tx@list
+\def\tx@reset[#1]{%
+  \@for\@taxon:=#1\do{%
+    \tx@def@item{used}{\@taxon}{\tx@false}}%
+  \gdef\tx@current@genus{}}
+\def\taxonreset{%
+  \@ifnextchar[%]
+    {\tx@reset}{\tx@reset[\the\tx@list]}}
+% Font Styles
+\def\tx@protect{}
+\def\tx@protect@make{\def\tx@protect{\noexpand\tx@protect\noexpand}}
+\def\tx@itshape{\tx@protect\itshape}
+\def\tx@upshape{\tx@protect\upshape}
+% String Parsing
+\def\tx@no@last@space#1 \@nil{#1}
+\def\tx@sep@by@space#1 #2\@nil{%
+  \def\tx@space@bf{#1}%
+  \def\tx@space@af{#2}%
+  \unless\ifx\tx@space@af\@empty
+    \edef\tx@space@af{\expandafter\tx@no@last@space\tx@space@af\@nil}\fi}
+\def\tx@get@first@char#1#2\@nil{%
+  \def\tx@first@char{#1}}
+% Defining
+\def\tx@if@defined#1#2#3{%
+  \ifcsname tx_la_#1\endcsname#2\else#3\fi}
+\def\tx@warning#1{\fbox{#1}}
+\def\tx@def@item#1#2#3{%
+  \expandafter\gdef\csname tx_#1_#2\endcsname{#3}}
+\def\tx@edef@item#1#2#3{%
+  \expandafter\xdef\csname tx_#1_#2\endcsname{#3}}
+\def\tx@def#1#2#3#4{%
+  \tx@def@item{la}{#3}{{#1#3}}%
+  \tx@def@item{zh}{#3}{#2}%
+  \tx@def@item{au}{#3}{#4}%
+  \tx@sep@by@space#3 \@nil
+  \tx@edef@item{ge}{#3}{\tx@space@bf}%
+  \unless\ifx\tx@space@af\@empty
+    \tx@get@first@char#3 \@nil
+    \edef\tx@ab{\tx@first@char.\tx@nobreak{} \tx@space@af}%
+    \tx@edef@item{ab}{#3}{{#1\tx@ab}}%
+  \else\tx@def@item{ab}{#3}{{#1#3}}\fi
+  \tx@def@item{used}{#3}{\tx@false}%
+  \edef\tx@append@list{\global\noexpand\tx@list={\the\tx@list,#3}}%
+    \tx@append@list}
+% Shorthands
+\catcode`\|\active
+\def|#1|{\tx@if@defined{#1}{\tx@expr{#1}\tx@hook{#1}}{\tx@warning{#1}}}
+\def\zh|#1|{\tx@if@defined{#1}{\csname tx_zh_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
+\def\la|#1|{\tx@if@defined{#1}{\csname tx_la_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
+\def\au|#1|{\tx@if@defined{#1}{\csname tx_au_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
+\def\ge|#1|{\tx@if@defined{#1}{\csname tx_ge_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
+\def\ab|#1|{\tx@if@defined{#1}{\csname tx_ab_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
+\def\fu|#1|{\tx@if@defined{#1}{\taxonreset[#1]\tx@expr{#1}\tx@hook{#1}}{\tx@warning{#1}}}
+\def\tx@expr#1{%
+  \edef\tx@zh{\zh|#1|}%
+  \edef\tx@ge{\ge|#1|}%
+  \edef\tx@au{\au|#1|}%
+  \if\csname tx_used_#1\endcsname\tx@true\relax
+    \if@tx@chinese@
+      \ifx\tx@zh\@empty\la|#1|\else\zh|#1|\fi
+    \else
+      \ifx\tx@ge\tx@current@genus
+        \ab|#1|\else\la|#1|\fi
+    \fi
+  \else
+    \if@tx@chinese@\unless\ifx\tx@zh\@empty\zh|#1|\space\fi\fi
+    \ifx\tx@ge\tx@current@genus
+      \ab|#1|\else\la|#1|\fi
+    \unless\ifx\tx@au\@empty\space\au|#1|\fi
+    \tx@def@item{used}{#1}{\tx@true}%
+  \fi
+  \global\let\tx@current@genus\tx@ge}
+% Main Format
+\begingroup
+\@makeother\^^I%
+\@makeother\^^M%
+\gdef\@taxon#1{%
+  \begingroup%
+  \tx@protect@make%
+  \@makeother\^^I%
+  \@makeother\^^M%
+  \@taxon@{#1}}%
+\gdef\@taxon@#1^^I#2^^I#3^^I#4^^M{%
+  \tx@def{#1}{#2}{#3}{#4}%
+  \endgroup}%
+\endgroup
+% Font Style Application
+\def\tx@up#1{\space\tx@upshape#1\tx@itshape\space}
+  \def\tx@up@subg#1 subg. {#1\tx@up{subg.}}
+  \def\tx@up@sect#1 sect. {#1\tx@up{sect.}}
+  \def\tx@up@subsect#1 subsect. {#1\tx@up{subsect.}}
+  \def\tx@up@ser#1 ser. {#1\tx@up{ser.}}
+  \def\tx@up@subser#1 subser. {#1\tx@up{subser.}}
+  \def\tx@up@subsp#1 subsp. {#1\tx@up{subsp.}}
+  \def\tx@up@var#1 var. {#1\tx@up{var.}}
+  \def\tx@up@subvar#1 subvar. {#1\tx@up{subvar.}}
+  \def\tx@up@f#1 f. {#1\tx@up{f.}}
+  \def\tx@up@subf#1 subf. {#1\tx@up{subf.}}
+% Hierarchy
+\gdef\regnum{\@taxon{}}
+\gdef\subregnum{\@taxon{}}
+\gdef\phylum{\@taxon{}}
+\gdef\subphylum{\@taxon{}}
+\gdef\classis{\@taxon{}}
+\gdef\subclassis{\@taxon{}}
+\gdef\ordo{\@taxon{}}
+\gdef\subordo{\@taxon{}}
+  \gdef\familia{\@taxon{}}
+  \gdef\subfamilia{\@taxon{}}
+  \gdef\tribus{\@taxon{}}
+  \gdef\subtribus{\@taxon{}}
+    \gdef\genus{\@taxon{\tx@itshape}}
+    \gdef\subgenus{\@taxon{\tx@itshape\expandafter\tx@up@subg}}
+    \gdef\sectio{\@taxon{\tx@itshape\expandafter\tx@up@sect}}
+    \gdef\subsectio{\@taxon{\tx@itshape\expandafter\tx@up@subsect}}
+    \gdef\series{\@taxon{\tx@itshape\expandafter\tx@up@ser}}
+    \gdef\subseries{\@taxon{\tx@itshape\expandafter\tx@up@subser}}
+      \gdef\species{\@taxon{\tx@itshape}}
+      \gdef\subspecies{\@taxon{\tx@itshape\expandafter\tx@up@subsp}}
+      \gdef\varietas{\@taxon{\tx@itshape\expandafter\tx@up@var}}
+      \gdef\subvarietas{\@taxon{\tx@itshape\expandafter\tx@up@subvar}}
+      \gdef\forma{\@taxon{\tx@itshape\expandafter\tx@up@f}}
+      \gdef\subforma{\@taxon{\tx@itshape\expandafter\tx@up@subf}}
+% Input Source File
+\def\tx@list@path{}
+\def\taxonlistpath#1{\def\tx@list@path{#1}}
+\def\taxonlist#1{\input{\tx@list@path#1}}
+\makeatother
+\endinput

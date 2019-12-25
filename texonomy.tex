@@ -1,0 +1,224 @@
+%% texonomy.tex
+%% Copyright 2019 Yuchang Yang < yang.yc.allium@gmail.com >
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3c
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Yuchang Yang.
+%
+% This work consists of:
+%   - texonomy.sty
+%   - texonomy.tex
+%   - texonomy.pdf
+%   - README.md
+
+% arara: xelatex
+% arara: xelatex
+
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{texonomy}
+
+\usepackage{color}
+	\definecolor{mikudark}{RGB}{19, 149, 139}
+	\definecolor{mikuribbon}{RGB}{228, 0, 127}
+
+\usepackage{xeCJK}
+	\setCJKmainfont{SimSun}
+	\setCJKmonofont{FangSong}
+
+\usepackage{url}
+
+\let\pkgname\textsf
+\def\ul#1{``#1''}
+
+\parskip=1ex
+
+\let\lbracket[%]
+\let\rbracket]%[
+\let\dmb\[%\]
+\let\dme\]%\[
+\def\lan{\ensuremath{\langle}}
+\def\ran{\ensuremath{\rangle}}
+\def\tab{\ensuremath{\;\rightarrow\;}}
+\def\spc{\textvisiblespace}
+
+\catcode`\<\active
+\def<#1>{\textrm{\lan\textit{#1}\ran}}
+
+\catcode`\$\active
+\long\def$#1${{\def\CJKecglue{\CJKglue}\mdseries\ttfamily\color{mikudark}#1}}
+\long\def\[#1\]{\dmb\vbox{\parskip=0ex\leavevmode$\strut#1$}\dme}
+
+\catcode`\!\active
+\long\def!#1!{{\color{mikuribbon}#1}}
+\long\def\disp#1{\dmb\vbox{\parskip=0ex\leavevmode\strut!#1!}\dme}
+
+\title{The \textsf{texonomy} package%
+	\footnote{Github repository: \protect\url{https://github.com/Mikumikunisiteageru/texonomy}}}
+\author{Yuchang \textsc{Yang}（杨宇昌）%
+	\kern-5pt\footnote{Email address: \protect\url{yang.yc.allium@gmail.com}}}
+\date{December 25\textsuperscript{th}, 2019\qquad ver.~1.00}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+	\textsf{texonomy} is an independent \LaTeX\ package for taxonomic writing. It provides macros to typeset taxa in proper style.
+
+\section{Defining a taxon}
+
+	Before a taxon is typeset, it should be defined. The definition of a taxon consists of 4 aspects: rank, local name, scientific name (in Latin), and author citation, in the following format:
+		\[<rank>\tab<local name>\tab<scientific name>\tab<author citation>\]
+	In the formula above, $<rank>$ is a macro named by a certain rank in Latin, while $<local name>$, $<scientific name>$, and $<author citation>$ are all token lists to be grabbed as parameters. These components are separated by tabs.
+
+	\begin{description}
+		\item[$<rank>$] 24 ranks based on the \textit{International Code of Nomenclature for algae, fungi, and plants} have been defined as macros, namely,
+			$\string\regnum$,
+			$\string\subregnum$,
+			$\string\phylum$,
+			$\string\subphylum$,
+			$\string\classis$,
+			$\string\subclassis$,
+			$\string\ordo$,
+			$\string\subordo$,
+			$\string\familia$,
+			$\string\subfamilia$,
+			$\string\tribus$,
+			$\string\subtribus$,
+			$\string\genus$,
+			$\string\subgenus$,
+			$\string\sectio$,
+			$\string\subsectio$,
+			$\string\series$,
+			$\string\subseries$,
+			$\string\species$,
+			$\string\subspecies$,
+			$\string\varietas$,
+			$\string\subvarietas$,
+			$\string\forma$, and
+			$\string\subforma$.
+		\item[$<local name>$] a parameter never typeset unless called by $\string\zh$ (see Section~\ref{sec>usage}) or in non-Latin context (see Section~\ref{sec>non-latin}). May be left empty or used as comment field.
+		\item[$<scientific name>$] a non-empty parameter able to be fully expanded to unexpanded character tokens.
+		$<scientific name>$ of $<rank>$ lower than genus should contain more than one word and begin with the genus name.
+		However, $<scientific name>$ of a genus or higher rank should be a single word.
+		When the $<rank>$ is $\string\subgenus$, $\string\sectio$, $\string\subspecies$, etc., $<scientific name>$ should contain $subg.$, $sect.$, $subsp.$, etc., respectively.
+		E.g., $Allium subg. Allium$ is a good $<scientific name>$, while $subg. Allium$ or $Allium subgenus Allium$ is not.
+		\item[$<author citation>$] should not be empty except taxon is an autonym.
+	\end{description}
+
+	Take garlic as an example: the plant called \ul{garlic} in English is a \ul{species} with scientific name \ul{\textit{Allium sativum}}, whose author is to be cited as \ul{L.}, short for Carolus Linnaeus. To define such a taxon, one should write: \par
+		\[\string\species\tab garlic\tab Allium\spc sativum\tab L.\]
+	where the symbol $\tab$ stands for a tab (U+09), and $\spc$ a space (U+20). Such a definition should occupy a single line \emph{without} comment symbols (by default $\%$), but it can be indented by spaces or tabs.
+
+\section{Storing Taxon Definition Outside}
+
+	When a document involve a large number of taxa, it is suggested to write their definitions in a separate file, and then input into the main source file through $\string\taxonlist\{<file name>\}$. This can not only keep the main source neat, but also make the definition list reusable easily, as the way we store bibliography.
+
+	When there are multiple $\string\taxonlist$'s, files and definitions inside are read in order. If a scientific name is defined for multiple times, only the last time counts.
+
+	It is possible to set a common path for files to be input by $\string\taxonlist$ in the rest of the document, through $\string\taxonlistpath\{<path>\}$.
+
+\section{Usage}\label{sec>usage}
+
+	\familia	石蒜科	Amaryllidaceae	J. St.-Hil.
+	\genus	葱属	Allium	L.
+	\subgenus	蒜亚属	Allium subg. Allium	
+	\species	garlic	Allium sativum	L.
+
+	The typical way to typeset a taxon is to wrap its scientific name in a pair of vertical bars, i.e., $\string|<scientific name>\string|$. The author citation of a taxon occurs only at the first time the taxon is typeset. For taxa lower than genus, their genus part is abbreviated if the last taxon typeset is or belongs to that genus.
+	For example, given
+		\[\string\familia\tab \tab Amaryllidaceae\tab J.\spc St.-Hil.\par
+		  \string\genus\tab \tab Allium\tab L.\par
+		  \string\subgenus\tab \tab Allium\spc subg.\spc Allium\tab\par
+		  \string\species\tab garlic\tab Allium\spc sativum\tab L.\]
+	then the paragraph
+		\[\string|Allium\string| is a genus in \string|Amaryllidaceae\string|.\par
+		  The type species of \string|Allium\string| is \string|Allium sativum\string|, \par
+		  in the type subgenus \string|Allium subg. Allium\string|.\]
+	outputs
+		\disp{|Allium| is a genus in |Amaryllidaceae|. The type species of |Allium| is |Allium sativum|, in the type subgenus |Allium subg. Allium|.}
+
+	Any token list wrapped in vertical bars should have been defined literally as scientific name of a taxon. When vertical bars contain undefined content, the |content| is printed in a box to express warning.
+
+	Apart from using $\string|<scientific name>\string|$ directly, 6 shorthands are defined, including:
+	\begin{description}
+		\item[$\string\la\string|<scientific name>\string|$]
+			typesets the scientific name in style according to its rank:
+				$\string\la\string|Allium subg. Allium\string|$ outputs !\la|Allium subg. Allium|!.
+		\item[$\string\au\string|<scientific name>\string|$]
+			typesets the author citation:
+				$\string\au\string|Amaryllidaceae\string|$ outputs !\au|Amaryllidaceae|!.
+		\item[$\string\ge\string|<scientific name>\string|$]
+			typesets the genus part:
+				$\string\ge\string|Allium sativum\string|$ outputs !\ge|Allium sativum|!.
+		\item[$\string\ab\string|<scientific name>\string|$]
+			typesets the abbreviated form for taxon lower than genus:
+				$\string\ab\string|Allium sativum\string|$ outputs !\ab|Allium sativum|!.
+		\item[$\string\fu\string|<scientific name>\string|$]
+			typesets the full form as if typeset for the first time:
+				$\string\fu\string|Allium sativum\string|$ outputs !\fu|Allium sativum|!.
+		\item[$\string\zh\string|<scientific name>\string|$]
+			typesets the local name:
+				$\string\zh\string|Allium sativum\string|$ outputs !\zh|Allium sativum|!.
+	\end{description}
+
+\section{Resetting}
+
+	For a taxon, $\string|<scientific name>\string|$ behaves differently between the first time and the rest of the document. To typeset the full form again, apart from using $\string\fu\string|<scientific name>\string|$, one can also use $\string\taxonreset[<scientific name>]$ before $\string|<scientific name>\string|$ to wipe its presence from the memory.
+	More generally,	$\string\taxonreset$ has three usages:
+	\begin{description}
+		\item[$\string\taxonreset\lbracket<scientific name>\rbracket$]
+			resets the memory for a single taxon.
+		\item[$\string\taxonreset\lbracket<scientific name>\ensuremath{_1}, \ensuremath{\cdots}, <scientific name>\ensuremath{_n}\rbracket$]
+			resets the memory for a list of \ensuremath{n} taxa.
+		\item[$\string\taxonreset$]
+			resets the memory for all taxa.
+	\end{description}
+
+\section{Non-Latin Mode}\label{sec>non-latin}
+
+	\csname@tx@chinese@true\endcsname
+	\species	蒜	Allium sativum	L.
+	\taxonreset
+
+	In taxonomic works of some languages, it is preferred to denote a taxon by its local name instead of the scientific name, and the scientific name occurs only at the first time the taxon is mentioned. If so, one should write
+		\[\string\usepackage[nonlatin]\{texonomy\}\]
+	in the preamble instead of $\string\usepackage\{texonomy\}$ to load the package in non-Latin mode.
+
+	Suppose the non-Latin mode has been on. Given the definitions
+		\[\string\familia\tab 石蒜科\tab Amaryllidaceae\tab J.\spc St.-Hil.\par
+		  \string\genus\tab 葱属\tab Allium\tab L.\par
+		  \string\species\tab 蒜\tab Allium\spc sativum\tab L.\]
+	then the paragraph
+		\[\string|Allium\string|是\string|Amaryllidaceae\string|的一个属。\par
+		  \string|Allium\string|的模式种为\string|Allium sativum\string|。\]
+	results in the output
+		\disp{|Allium|是|Amaryllidaceae|的一个属。|Allium|的模式种为|Allium sativum|。}
+
+\section{The Predefined Hook}
+
+	$\string\tx@hook$ is a macro with an argument ($<scientific name>$) predefined empty. Every time a taxon is typeset (in typical way or by shorthands), the hook macro is executed. This feature may be useful when one wants to make an index with package like \pkgname{glossaries}.
+
+\section{History}
+
+	\begin{description}
+		\item[ver. 1.00 (2019.12.25)] First release on Github.
+	\end{description}
+
+\section{To-do List}
+
+	\begin{itemize}
+		\item Handle taxa with hybrid sign (\ensuremath{\times}) engine-independently.
+		\item Include my other taxonomic tools (e.g. phylotree drawing) in the package.
+	\end{itemize}
+
+\end{document}
