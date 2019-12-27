@@ -65,14 +65,14 @@
 	\footnote{Github repository: \protect\url{https://github.com/Mikumikunisiteageru/texonomy}}}
 \author{Yuchang \textsc{Yang}（杨宇昌）%
 	\kern-5pt\footnote{Email address: \protect\url{yang.yc.allium@gmail.com}}}
-\date{December 25\textsuperscript{th}, 2019\qquad ver.~1.00}
+\date{December 27\textsuperscript{th}, 2019\qquad ver.~1.01}
 
 \begin{document}
 
 \maketitle
 
 \section{Introduction}
-	\textsf{texonomy} is an independent \LaTeX\ package for taxonomic writing. It provides macros to typeset taxa in proper style.
+	\textsf{texonomy} is an independent \LaTeX\ package for taxonomic writing. It typesets (plant) taxa in elegant ways. After some simple and natural preparation, one can write taxonomic works without being besieged by font styles, author citation, and genus abbreviation of scientific names --- just embrace the scientific names in verticle bar ($\string|$, U+7C) pairs, and \textsf{texonomy} will cope with them. 
 
 \section{Defining a taxon}
 
@@ -112,7 +112,7 @@
 		However, $<scientific name>$ of a genus or higher rank should be a single word.
 		When the $<rank>$ is $\string\subgenus$, $\string\sectio$, $\string\subspecies$, etc., $<scientific name>$ should contain $subg.$, $sect.$, $subsp.$, etc., respectively.
 		E.g., $Allium subg. Allium$ is a good $<scientific name>$, while $subg. Allium$ or $Allium subgenus Allium$ is not.
-		\item[$<author citation>$] should not be empty except taxon is an autonym.
+		\item[$<author citation>$] should not be empty unless taxon is an autonym.
 	\end{description}
 
 	Take garlic as an example: the plant called \ul{garlic} in English is a \ul{species} with scientific name \ul{\textit{Allium sativum}}, whose author is to be cited as \ul{L.}, short for Carolus Linnaeus. To define such a taxon, one should write: \par
@@ -147,7 +147,7 @@
 	outputs
 		\disp{|Allium| is a genus in |Amaryllidaceae|. The type species of |Allium| is |Allium sativum|, in the type subgenus |Allium subg. Allium|.}
 
-	Any token list wrapped in vertical bars should have been defined literally as scientific name of a taxon. When vertical bars contain undefined content, the |content| is printed in a box to express warning.
+	Tokens wrapped in vertical bars should have been defined literally as scientific name of a taxon. When a pair of vertical bars contains undefined content, the |content| is typeset in a box to express warning. Note: such warnings will \emph{not} be printed on the console or into the log file.
 
 	Apart from using $\string|<scientific name>\string|$ directly, 6 shorthands are defined, including:
 	\begin{description}
@@ -212,6 +212,7 @@
 
 	\begin{description}
 		\item[ver. 1.00 (2019.12.25)] First release on Github.
+		\item[ver. 1.01 (2019.12.27)] Macro $\string\tx@expr$ rewritten.
 	\end{description}
 
 \section{To-do List}

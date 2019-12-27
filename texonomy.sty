@@ -89,25 +89,25 @@
 \def\ge|#1|{\tx@if@defined{#1}{\csname tx_ge_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
 \def\ab|#1|{\tx@if@defined{#1}{\csname tx_ab_#1\endcsname\tx@hook{#1}}{\tx@warning{#1}}}
 \def\fu|#1|{\tx@if@defined{#1}{\taxonreset[#1]\tx@expr{#1}\tx@hook{#1}}{\tx@warning{#1}}}
-\def\tx@expr#1{%
-  \edef\tx@zh{\zh|#1|}%
+\def\tx@abbreviate#1{%
   \edef\tx@ge{\ge|#1|}%
-  \edef\tx@au{\au|#1|}%
-  \if\csname tx_used_#1\endcsname\tx@true\relax
+  \ifx\tx@ge\tx@current@genus
+    \ab|#1|\else\la|#1|\fi}
+\def\tx@if@non@empty#1#2#3#4{%
+  \edef\tx@temp{#1}%
+  \ifx\tx@temp\@empty#4\else#2#1#3\fi}
+\def\tx@expr#1{%
+  \if\csname tx_used_#1\endcsname\tx@true
     \if@tx@chinese@
-      \ifx\tx@zh\@empty\la|#1|\else\zh|#1|\fi
-    \else
-      \ifx\tx@ge\tx@current@genus
-        \ab|#1|\else\la|#1|\fi
-    \fi
+      \tx@if@non@empty{\zh|#1|}{}{}{\tx@abbreviate{#1}}%
+    \else\tx@abbreviate{#1}\fi
   \else
-    \if@tx@chinese@\unless\ifx\tx@zh\@empty\zh|#1|\space\fi\fi
-    \ifx\tx@ge\tx@current@genus
-      \ab|#1|\else\la|#1|\fi
-    \unless\ifx\tx@au\@empty\space\au|#1|\fi
+    \if@tx@chinese@\tx@if@non@empty{\zh|#1|}{}{\space}{}\fi
+    \tx@abbreviate{#1}%
+    \tx@if@non@empty{\au|#1|}{\space}{}{}%
     \tx@def@item{used}{#1}{\tx@true}%
   \fi
-  \global\let\tx@current@genus\tx@ge}
+  \xdef\tx@current@genus{\ge|#1|}}
 % Main Format
 \begingroup
 \@makeother\^^I%
