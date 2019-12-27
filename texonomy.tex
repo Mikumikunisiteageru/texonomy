@@ -119,9 +119,9 @@
 		\[\string\species\tab garlic\tab Allium\spc sativum\tab L.\]
 	where the symbol $\tab$ stands for a tab (U+09), and $\spc$ a space (U+20). Such a definition should occupy a single line \emph{without} comment symbols (by default $\%$), but it can be indented by spaces or tabs.
 
-\section{Storing Taxon Definition Outside}
+\section{Storing Taxon Definitions Outside}
 
-	When a document involve a large number of taxa, it is suggested to write their definitions in a separate file, and then input into the main source file through $\string\taxonlist\{<file name>\}$. This can not only keep the main source neat, but also make the definition list reusable easily, as the way we store bibliography.
+	When a document involves a large number of taxa, it is suggested to write their definitions in a separate file, and then input into the main source file through $\string\taxonlist\{<file name>\}$. This does not only keep the main source neat, but also makes the definition list reusable easily, as the way we store bibliography.
 
 	When there are multiple $\string\taxonlist$'s, files and definitions inside are read in order. If a scientific name is defined for multiple times, only the last time counts.
 
